@@ -1,5 +1,5 @@
 {
-  description = "A project by ?.";
+  description = "flake.nix for the 'Functional Programming in TypeScript Tutorial at Bobkonf 2026'";
 
   inputs = {
     nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/*.tar.gz";
