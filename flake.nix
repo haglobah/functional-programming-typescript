@@ -36,6 +36,7 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             bun
+            nodejs_24
             typescript
             typescript-language-server
           ];
