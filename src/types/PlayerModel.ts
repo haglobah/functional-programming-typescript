@@ -1,16 +1,18 @@
 export type Track = { id: string; url: string; title: string }
 
+type Time = number
+
 type Idle = { kind: 'Idle' }
 type Loading = { kind: 'Loading'; track: Track }
-type Playing = { kind: 'Playing'; track: Track; currentTime: number }
-type Paused = { kind: 'Paused'; track: Track; currentTime: number }
+type Playing = { kind: 'Playing'; track: Track; currentTime: Time; duration: Time }
+type Paused = { kind: 'Paused'; track: Track; currentTime: Time; duration: Time }
 
 export type State = Idle | Loading | Playing | Paused
 
 export const initialPlayerState = (): State => ({ kind: 'Idle' })
 
 type SelectTrack = { kind: 'SelectTrack'; track: Track }
-type AudioReady = { kind: 'AudioReady' }
+type AudioReady = { kind: 'AudioReady'; duration: Time }
 type Tick = { kind: 'Tick'; time: number }
 type TogglePlay = { kind: 'TogglePlay' }
 

@@ -17,7 +17,10 @@ const update = (state: State, msg: Msg): [State, Cmd] => {
       ]
     case 'AudioReady':
       if (state.kind === 'Loading')
-        return [{ kind: 'Playing', track: state.track, currentTime: 0 }, { kind: 'Play' }]
+        return [
+          { kind: 'Playing', track: state.track, currentTime: 0, duration: msg.duration },
+          { kind: 'Play' },
+        ]
       return [state, { kind: 'None' }]
     case 'Tick':
       if (state.kind === 'Playing' || state.kind === 'Paused')
@@ -61,7 +64,7 @@ export const AudioPlayer: Component<Props> = () => {
   const [state, dispatch] = createUpdater(update, initialPlayerState(), makeExecute(player))
 
   onMount(() => {
-    player.oncanplay = () => dispatch({ kind: 'AudioReady' })
+    player.oncanplay = () => dispatch({ kind: 'AudioReady', duration: player.duration })
     player.ontimeupdate = () => dispatch({ kind: 'Tick', time: player.currentTime })
   })
 
@@ -203,7 +206,7 @@ export const AudioPlayer: Component<Props> = () => {
                   </div>
                   <div class="flex justify-between mt-2">
                     <span class="text-xs text-slate-400">{formatTime(state.currentTime)}</span>
-                    <span class="text-xs text-slate-400">5:00</span>
+                    <span class="text-xs text-slate-400">{formatTime(state.duration)}</span>
                   </div>
                 </div>
 
