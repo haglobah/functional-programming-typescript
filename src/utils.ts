@@ -15,3 +15,12 @@ export const createUpdater = <S extends object, A, C>(
   }
   return [store, dispatch]
 }
+
+export type Tagged<K extends string, T extends object = Record<string, never>> = {
+  readonly kind: K
+} & { readonly [P in keyof T]: T[P] }
+
+export const tag =
+  <K extends string>(kind: K) =>
+  <T extends object = Record<string, never>>(data?: T): Tagged<K, T> =>
+    ({ kind, ...data }) as Tagged<K, T>

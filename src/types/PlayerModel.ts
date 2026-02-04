@@ -1,13 +1,5 @@
 import { Maybe } from 'purify-ts/Maybe'
-
-type Tagged<K extends string, T extends object = Record<string, never>> = { readonly kind: K } & {
-  readonly [P in keyof T]: T[P]
-}
-
-const tag =
-  <K extends string>(kind: K) =>
-  <T extends object = Record<string, never>>(data?: T): Tagged<K, T> =>
-    ({ kind, ...data }) as Tagged<K, T>
+import { type Tagged, tag } from '../utils'
 
 export type Track = Tagged<'Track', { id: string; url: string; title: string }>
 export const Track = (id: string, url: string, title: string): Track =>
