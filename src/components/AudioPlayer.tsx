@@ -75,6 +75,7 @@ export const AudioPlayer: Component<Props> = () => {
   onMount(() => {
     player.oncanplay = () => dispatch({ kind: 'AudioReady', duration: player.duration })
     player.ontimeupdate = () => dispatch({ kind: 'Tick', time: player.currentTime })
+    player.onended = () => dispatch({ kind: 'TogglePlay' })
   })
 
   const tracks: Track[] = [
