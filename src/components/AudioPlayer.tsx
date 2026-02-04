@@ -1,63 +1,74 @@
 import { onMount, For, type Component } from 'solid-js'
 import {
   initialPlayerState,
-  type State,
-  type Msg,
-  type Cmd,
-  type Track,
+  State,
+  Msg,
+  Cmd,
+  Track,
+  type State as StateT,
+  type Msg as MsgT,
+  type Cmd as CmdT,
 } from '../types/PlayerModel'
 import { createUpdater } from '../utils'
 
-const update = (state: State, msg: Msg): [State, Cmd] => {
+const update = (state: StateT, msg: MsgT): [StateT, CmdT] => {
   switch (msg.kind) {
     case 'SelectTrack':
-      return [
-        { kind: 'Loading', track: msg.track },
-        { kind: 'LoadAndPlay', url: msg.track.url },
-      ]
+      return [State.Loading(msg.track), Cmd.LoadAndPlay(msg.track.url)]
+
     case 'AudioReady':
-      if (state.kind === 'Loading')
-        return [
-          { kind: 'Playing', track: state.track, currentTime: 0, duration: msg.duration },
-          { kind: 'Play' },
-        ]
-      return [state, { kind: 'None' }]
+      return state.kind === 'Loading'
+        ? [State.Playing(state.track, 0, msg.duration), Cmd.Play()]
+        : [state, Cmd.None()]
+
     case 'Tick':
-      if (state.kind === 'Playing' || state.kind === 'Paused')
-        return [{ ...state, currentTime: msg.time }, { kind: 'None' }]
-      return [state, { kind: 'None' }]
+      return state.kind === 'Playing'
+        ? [State.Playing(state.track, msg.time, state.duration), Cmd.None()]
+        : state.kind === 'Paused'
+          ? [State.Paused(state.track, msg.time, state.duration), Cmd.None()]
+          : [state, Cmd.None()]
+
     case 'TogglePlay':
-      if (state.kind === 'Playing') return [{ ...state, kind: 'Paused' }, { kind: 'Pause' }]
-      if (state.kind === 'Paused') return [{ ...state, kind: 'Playing' }, { kind: 'Play' }]
-      return [state, { kind: 'None' }]
+      return state.kind === 'Playing'
+        ? [State.Paused(state.track, state.currentTime, state.duration), Cmd.Pause()]
+        : state.kind === 'Paused'
+          ? [State.Playing(state.track, state.currentTime, state.duration), Cmd.Play()]
+          : [state, Cmd.None()]
+
     case 'Seek':
-      if (state.kind === 'Playing' || state.kind === 'Paused')
-        return [
-          { ...state, currentTime: msg.time },
-          { kind: 'SeekTo', time: msg.time },
-        ]
-      return [state, { kind: 'None' }]
+      return state.kind === 'Playing'
+        ? [State.Playing(state.track, msg.time, state.duration), Cmd.SeekTo(msg.time)]
+        : state.kind === 'Paused'
+          ? [State.Paused(state.track, msg.time, state.duration), Cmd.SeekTo(msg.time)]
+          : [state, Cmd.None()]
+
     default:
-      const _exhaustive = msg
+      const _exhaustive: never = msg
       return _exhaustive
   }
 }
 
-const makeExecute = (player: HTMLMediaElement) => {
-  const execute = (cmd: Cmd) => {
-    if (cmd.kind === 'LoadAndPlay') {
-      player.src = cmd.url
-      player.play()
-    } else if (cmd.kind === 'Play') {
-      player.play()
-    } else if (cmd.kind === 'Pause') {
-      player.pause()
-    } else if (cmd.kind === 'SeekTo') {
-      player.currentTime = cmd.time
+const makeExecute =
+  (player: HTMLMediaElement) =>
+  (cmd: CmdT): void => {
+    switch (cmd.kind) {
+      case 'LoadAndPlay':
+        player.src = cmd.url
+        player.play()
+        break
+      case 'Play':
+        player.play()
+        break
+      case 'Pause':
+        player.pause()
+        break
+      case 'SeekTo':
+        player.currentTime = cmd.time
+        break
+      case 'None':
+        break
     }
   }
-  return execute
-}
 
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60)
@@ -73,32 +84,22 @@ export const AudioPlayer: Component<Props> = () => {
   const [state, dispatch] = createUpdater(update, initialPlayerState(), makeExecute(player))
 
   onMount(() => {
-    player.oncanplay = () => dispatch({ kind: 'AudioReady', duration: player.duration })
-    player.ontimeupdate = () => dispatch({ kind: 'Tick', time: player.currentTime })
-    player.onended = () => dispatch({ kind: 'TogglePlay' })
+    player.oncanplay = () => dispatch(Msg.AudioReady(player.duration))
+    player.ontimeupdate = () => dispatch(Msg.Tick(player.currentTime))
+    player.onended = () => dispatch(Msg.TogglePlay())
   })
 
-  const tracks: Track[] = [
-    {
-      id: '1',
-      title: 'Lo-Fi Beats',
-      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-    },
-    {
-      id: '2',
-      title: 'Synthwave',
-      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-    },
+  const tracks = [
+    Track('1', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', 'Lo-Fi Beats'),
+    Track('2', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', 'Synthwave'),
   ]
 
-  const isCurrentTrack = (track: Track): boolean => {
-    if (state.kind === 'Idle') return false
-    return state.track.id === track.id
-  }
+  const isCurrentTrack = (track: ReturnType<typeof Track>): boolean =>
+    state.kind !== 'Idle' && state.track.id === track.id
 
   const handleSeek = (e: Event) => {
     const target = e.target as HTMLInputElement
-    dispatch({ kind: 'Seek', time: parseFloat(target.value) })
+    dispatch(Msg.Seek(parseFloat(target.value)))
   }
 
   return (
@@ -121,7 +122,7 @@ export const AudioPlayer: Component<Props> = () => {
             <For each={tracks}>
               {(track) => (
                 <button
-                  onClick={() => dispatch({ kind: 'SelectTrack', track })}
+                  onClick={() => dispatch(Msg.SelectTrack(track))}
                   class={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-200 ${
                     isCurrentTrack(track)
                       ? 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-500/50'
@@ -265,7 +266,7 @@ export const AudioPlayer: Component<Props> = () => {
 
                 <div class="flex justify-center">
                   <button
-                    onClick={() => dispatch({ kind: 'TogglePlay' })}
+                    onClick={() => dispatch(Msg.TogglePlay())}
                     class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105 transition-all duration-200"
                   >
                     {state.kind === 'Playing' ? (
