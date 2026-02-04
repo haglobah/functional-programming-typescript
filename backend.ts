@@ -6,7 +6,6 @@ const setup = () => {
   const createUsers = db.query(`
 CREATE TABLE users (
   id string PRIMARY KEY,
-
   name integer NOT NULL)
 `)
   createUsers.run()
