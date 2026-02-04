@@ -1,5 +1,4 @@
-import { type Track } from './Track'
-export { type Track }
+export type Track = { id: string; url: string; title: string }
 
 type Idle = { kind: 'Idle' }
 type Loading = { kind: 'Loading'; track: Track }

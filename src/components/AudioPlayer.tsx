@@ -34,7 +34,7 @@ const update = (state: State, msg: Msg): [State, Cmd] => {
 }
 
 const makeExecute = (player: HTMLMediaElement) => {
-  return (cmd: Cmd) => {
+  const execute = (cmd: Cmd) => {
     if (cmd.kind === 'LoadAndPlay') {
       player.src = cmd.url
       player.play()
@@ -44,6 +44,7 @@ const makeExecute = (player: HTMLMediaElement) => {
       player.pause()
     }
   }
+  return execute
 }
 
 const formatTime = (seconds: number): string => {
@@ -96,7 +97,9 @@ export const AudioPlayer: Component<Props> = () => {
           </div>
 
           <div class="space-y-3 mb-8">
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Playlist</p>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+              Playlist
+            </p>
             <For each={tracks}>
               {(track) => (
                 <button
@@ -116,9 +119,18 @@ export const AudioPlayer: Component<Props> = () => {
                   >
                     {isCurrentTrack(track) && state.kind === 'Playing' ? (
                       <div class="flex items-end gap-0.5 h-4">
-                        <span class="w-1 bg-white rounded-full animate-pulse" style="height: 100%; animation-delay: 0ms" />
-                        <span class="w-1 bg-white rounded-full animate-pulse" style="height: 60%; animation-delay: 150ms" />
-                        <span class="w-1 bg-white rounded-full animate-pulse" style="height: 80%; animation-delay: 300ms" />
+                        <span
+                          class="w-1 bg-white rounded-full animate-pulse"
+                          style="height: 100%; animation-delay: 0ms"
+                        />
+                        <span
+                          class="w-1 bg-white rounded-full animate-pulse"
+                          style="height: 60%; animation-delay: 150ms"
+                        />
+                        <span
+                          class="w-1 bg-white rounded-full animate-pulse"
+                          style="height: 80%; animation-delay: 300ms"
+                        />
                       </div>
                     ) : (
                       <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -154,8 +166,19 @@ export const AudioPlayer: Component<Props> = () => {
               <div class="text-center py-4">
                 <div class="w-16 h-16 mx-auto mb-4 bg-purple-600/30 rounded-full flex items-center justify-center">
                   <svg class="w-8 h-8 text-purple-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    />
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                 </div>
                 <p class="text-purple-300 font-medium">Loading {state.track.title}...</p>
