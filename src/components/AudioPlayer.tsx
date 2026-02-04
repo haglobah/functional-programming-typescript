@@ -30,6 +30,13 @@ const update = (state: State, msg: Msg): [State, Cmd] => {
       if (state.kind === 'Playing') return [{ ...state, kind: 'Paused' }, { kind: 'Pause' }]
       if (state.kind === 'Paused') return [{ ...state, kind: 'Playing' }, { kind: 'Play' }]
       return [state, { kind: 'None' }]
+    case 'Seek':
+      if (state.kind === 'Playing' || state.kind === 'Paused')
+        return [
+          { ...state, currentTime: msg.time },
+          { kind: 'SeekTo', time: msg.time },
+        ]
+      return [state, { kind: 'None' }]
     default:
       const _exhaustive = msg
       return _exhaustive
@@ -45,6 +52,8 @@ const makeExecute = (player: HTMLMediaElement) => {
       player.play()
     } else if (cmd.kind === 'Pause') {
       player.pause()
+    } else if (cmd.kind === 'SeekTo') {
+      player.currentTime = cmd.time
     }
   }
   return execute
@@ -84,6 +93,11 @@ export const AudioPlayer: Component<Props> = () => {
   const isCurrentTrack = (track: Track): boolean => {
     if (state.kind === 'Idle') return false
     return state.track.id === track.id
+  }
+
+  const handleSeek = (e: Event) => {
+    const target = e.target as HTMLInputElement
+    dispatch({ kind: 'Seek', time: parseFloat(target.value) })
   }
 
   return (
@@ -198,15 +212,53 @@ export const AudioPlayer: Component<Props> = () => {
                 </div>
 
                 <div class="mb-6">
-                  <div class="h-1.5 bg-slate-600 rounded-full overflow-hidden">
-                    <div
-                      class="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min((state.currentTime / 300) * 100, 100)}%` }}
+                  <div class="relative group">
+                    <input
+                      type="range"
+                      min={0}
+                      max={state.duration}
+                      step={0.1}
+                      value={state.currentTime}
+                      onInput={handleSeek}
+                      class="w-full h-2 bg-slate-600 rounded-full appearance-none cursor-pointer
+                        [&::-webkit-slider-thumb]:appearance-none
+                        [&::-webkit-slider-thumb]:w-4
+                        [&::-webkit-slider-thumb]:h-4
+                        [&::-webkit-slider-thumb]:rounded-full
+                        [&::-webkit-slider-thumb]:bg-gradient-to-br
+                        [&::-webkit-slider-thumb]:from-purple-500
+                        [&::-webkit-slider-thumb]:to-pink-500
+                        [&::-webkit-slider-thumb]:shadow-lg
+                        [&::-webkit-slider-thumb]:shadow-purple-500/50
+                        [&::-webkit-slider-thumb]:transition-transform
+                        [&::-webkit-slider-thumb]:duration-150
+                        [&::-webkit-slider-thumb]:hover:scale-125
+                        [&::-moz-range-thumb]:w-4
+                        [&::-moz-range-thumb]:h-4
+                        [&::-moz-range-thumb]:rounded-full
+                        [&::-moz-range-thumb]:bg-gradient-to-br
+                        [&::-moz-range-thumb]:from-purple-500
+                        [&::-moz-range-thumb]:to-pink-500
+                        [&::-moz-range-thumb]:border-0
+                        [&::-moz-range-thumb]:shadow-lg
+                        [&::-moz-range-thumb]:shadow-purple-500/50
+                        [&::-moz-range-thumb]:transition-transform
+                        [&::-moz-range-thumb]:duration-150
+                        [&::-moz-range-thumb]:hover:scale-125
+                        [&::-webkit-slider-runnable-track]:rounded-full
+                        [&::-moz-range-track]:rounded-full"
+                      style={{
+                        background: `linear-gradient(to right, rgb(168 85 247) 0%, rgb(236 72 153) ${(state.currentTime / state.duration) * 100}%, rgb(71 85 105) ${(state.currentTime / state.duration) * 100}%, rgb(71 85 105) 100%)`,
+                      }}
                     />
                   </div>
-                  <div class="flex justify-between mt-2">
-                    <span class="text-xs text-slate-400">{formatTime(state.currentTime)}</span>
-                    <span class="text-xs text-slate-400">{formatTime(state.duration)}</span>
+                  <div class="flex justify-between mt-3">
+                    <span class="text-xs font-medium text-slate-400">
+                      {formatTime(state.currentTime)}
+                    </span>
+                    <span class="text-xs font-medium text-slate-400">
+                      {formatTime(state.duration)}
+                    </span>
                   </div>
                 </div>
 

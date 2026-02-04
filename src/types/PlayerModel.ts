@@ -15,12 +15,14 @@ type SelectTrack = { kind: 'SelectTrack'; track: Track }
 type AudioReady = { kind: 'AudioReady'; duration: Time }
 type Tick = { kind: 'Tick'; time: number }
 type TogglePlay = { kind: 'TogglePlay' }
+type Seek = { kind: 'Seek'; time: Time }
 
-export type Msg = SelectTrack | AudioReady | Tick | TogglePlay
+export type Msg = SelectTrack | AudioReady | Tick | TogglePlay | Seek
 
 type None = { kind: 'None' }
 type Play = { kind: 'Play' }
 type Pause = { kind: 'Pause' }
 type LoadAndPlay = { kind: 'LoadAndPlay'; url: string }
+type SeekTo = { kind: 'SeekTo'; time: Time }
 
-export type Cmd = None | Play | Pause | LoadAndPlay
+export type Cmd = None | Play | Pause | LoadAndPlay | SeekTo
