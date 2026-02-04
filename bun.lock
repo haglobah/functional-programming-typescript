@@ -6,6 +6,7 @@
       "name": "functional-programming-typescript",
       "dependencies": {
         "@tailwindcss/vite": "^4.1.18",
+        "immutable": "^5.1.4",
         "immutable-js": "^0.3.1-6",
         "prettier": "^3.8.1",
         "purify-ts": "^2.1.4",
@@ -196,6 +197,8 @@
     "graceful-fs": ["graceful-fs@4.2.11", "", {}, "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="],
 
     "html-entities": ["html-entities@2.3.3", "", {}, "sha512-DV5Ln36z34NNTDgnz0EWGBLZENelNAtkiFA4kyNOG2tDI6Mz1uSWiq1wAKdyjnJwyDiDO7Fa2SO1CTxPXL8VxA=="],
+
+    "immutable": ["immutable@5.1.4", "", {}, "sha512-p6u1bG3YSnINT5RQmx/yRZBpenIl30kVxkTLDyHLIMk0gict704Q9n+thfDI7lTRm9vXdDYutVzXhzcThxTnXA=="],
 
     "immutable-js": ["immutable-js@0.3.1-6", "", {}, "sha512-d8Qo/NICIEOrI1CbYcHZU2f1oVsgybltNpZ1k4PHagJXI3q43B9B74Jq5nsbUVkewST/ylVGT7/rodeOWry+vQ=="],
 

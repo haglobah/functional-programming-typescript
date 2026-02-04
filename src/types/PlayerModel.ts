@@ -1,15 +1,25 @@
-export type Track = { id: string; url: string; title: string }
+import { Record } from 'immutable'
+
+type IdleT = { kind: 'Idle' }
+type Idle = Record<IdleT>
+const Idle = Record<IdleT>({ kind: 'Idle' })
+
+type TrackT = { id: string; url: string; title: string }
+type Track = Record<TrackT>
+const Track = Record<TrackT>({ id: '', url: '', title: '' })
 
 type Time = number
 
-type Idle = { kind: 'Idle' }
-type Loading = { kind: 'Loading'; track: Track }
+// type Idle = { kind: 'Idle' }
+type LoadingT = { kind: 'Loading'; track: Track }
+type Loading = Record<LoadingT>
+const Loading = Record<LoadingT>({ kind: 'Loading', track: Track() })
 type Playing = { kind: 'Playing'; track: Track; currentTime: Time; duration: Time }
 type Paused = { kind: 'Paused'; track: Track; currentTime: Time; duration: Time }
 
 export type State = Idle | Loading | Playing | Paused
 
-export const initialPlayerState = (): State => ({ kind: 'Idle' })
+export const initialPlayerState = (): State => Idle({ kind: 'Idle' })
 
 type SelectTrack = { kind: 'SelectTrack'; track: Track }
 type AudioReady = { kind: 'AudioReady'; duration: Time }
