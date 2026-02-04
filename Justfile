@@ -1,11 +1,14 @@
+help:
+    just --list
+
 [parallel]
 dev: frontend
 
 frontend:
-    bun run dev
+    bun dev
 
 build:
-    bun run build
+    bun build
 
 backend:
     bun backend.ts
