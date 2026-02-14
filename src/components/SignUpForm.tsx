@@ -38,7 +38,7 @@ export const SignUpForm = () => {
   const handleSubmit = async (formdata: SignUpForm) => {
     setIsSubmitting(true)
     try {
-      const resp = authClient.signUp.email(formdata)
+      const resp = await authClient.signUp.email(formdata)
       // TODO: Handle sign up logic here
       console.log('resp: ', resp)
     } finally {

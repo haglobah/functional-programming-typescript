@@ -5,13 +5,14 @@ import { Elysia, Context, status } from 'elysia'
 export const auth = betterAuth({
   database: new Database('./auth.sqlite'),
   emailAndPassword: { enabled: true },
+  trustedOrigins: ['http://localhost:5173'],
 })
 
 const betterAuthView = (context: Context) => {
   if (['POST', 'GET'].includes(context.request.method)) {
     return auth.handler(context.request)
   } else {
-    status(405)
+    return status(405)
   }
 }
 
