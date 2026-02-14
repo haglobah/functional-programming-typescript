@@ -11,7 +11,7 @@ build:
     bun build
 
 backend:
-    bun backend.ts
+    bun auth.ts
 
 open cmd="":
     #!/usr/bin/env bash
