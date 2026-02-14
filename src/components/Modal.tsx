@@ -16,13 +16,10 @@ export const createModal = () => {
         <Portal>
           <Show when={open()}>
             <div
-              class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+              class="fixed inset-0 flex items-center justify-center bg-black/50"
               onClick={() => setOpen(false)}
             >
-              <div
-                class="bg-slate-800 rounded-lg shadow-2xl p-8 max-w-md w-full mx-4 border border-slate-700"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div class="bg-slate-800 rounded-lg shadow-xl" onClick={(e) => e.stopPropagation()}>
                 {props.children}
               </div>
             </div>
