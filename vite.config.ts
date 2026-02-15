@@ -5,9 +5,5 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   clearScreen: false,
   plugins: [solid(), tailwindcss()],
-  server: {
-    proxy: {
-      '/api/auth': 'http://localhost:3000',
-    },
-  },
+  server: { proxy: { '/api/auth': 'http://localhost:3001' } },
 })

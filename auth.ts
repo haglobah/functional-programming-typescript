@@ -18,6 +18,6 @@ const betterAuthView = (context: Context) => {
 
 const apiPath = '/api/auth/*'
 
-const app = new Elysia().all(apiPath, betterAuthView).listen(3000)
+const app = new Elysia().all(apiPath, betterAuthView).listen(3001)
 
 console.log(`Auth API is running at ${app.server?.hostname}:${app.server?.port}${apiPath}`)
