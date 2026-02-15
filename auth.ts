@@ -6,6 +6,7 @@ export const auth = betterAuth({
   database: new Database('./auth.sqlite'),
   emailAndPassword: { enabled: true },
   trustedOrigins: ['http://localhost:5173'],
+  user: { additionalFields: { automergeRootId: { type: 'string', required: true } } },
 })
 
 const betterAuthView = (context: Context) => {

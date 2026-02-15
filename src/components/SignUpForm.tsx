@@ -29,6 +29,8 @@ const SignUpSchema = v.object({
 
 type SignUpForm = v.InferInput<typeof SignUpSchema>
 
+const makeAutomergeRootId = () => 'random-string'
+
 export const SignUpForm = () => {
   const [isSubmitting, setIsSubmitting] = createSignal(false)
   const [_signUpForm, { Form, Field }] = createForm<SignUpForm>({
@@ -38,7 +40,10 @@ export const SignUpForm = () => {
   const handleSubmit = async (formdata: SignUpForm) => {
     setIsSubmitting(true)
     try {
-      const resp = await authClient.signUp.email(formdata)
+      const resp = await authClient.signUp.email({
+        ...formdata,
+        automergeRootId: makeAutomergeRootId(),
+      })
       // TODO: Handle sign up logic here
       console.log('resp: ', resp)
     } finally {
