@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { Database } from 'bun:sqlite'
-import { Elysia, Context, status } from 'elysia'
+import { Elysia, type Context, status } from 'elysia'
 
 export const auth = betterAuth({
   database: new Database('./auth.sqlite'),
