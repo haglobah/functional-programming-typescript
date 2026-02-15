@@ -52,9 +52,7 @@ export const SignUpForm = () => {
   }
 
   return (
-    <div class="p-6 w-80">
-      <h1 class="text-xl font-bold text-white mb-4">Create Account</h1>
-
+    <div class="space-y-4">
       <Form onSubmit={handleSubmit} class="space-y-4">
         <Field name="name">
           {(field, props) => (
@@ -134,13 +132,6 @@ export const SignUpForm = () => {
           {isSubmitting() ? 'Creating Account...' : 'Sign Up'}
         </button>
       </Form>
-
-      <p class="text-center text-slate-400 text-sm mt-4">
-        Already have an account?{' '}
-        <a href="/login" class="text-purple-400 hover:text-purple-300">
-          Log in
-        </a>
-      </p>
     </div>
   )
 }
