@@ -1,9 +1,6 @@
 import { createSignal, onMount, For, Show } from 'solid-js'
 
 export const ImperativeAudioPlayer = () => {
-  // --- "Boolean Soup" State ---
-  // These are independent. Nothing stops 'loading' and 'playing'
-  // from being true at the same time, or both false while audio is actually playing.
   const [isPlaying, setIsPlaying] = createSignal(false)
   const [isLoading, setIsLoading] = createSignal(false)
   const [currentTrack, setCurrentTrack] = createSignal<any>(null)
@@ -11,14 +8,12 @@ export const ImperativeAudioPlayer = () => {
 
   const audio = new Audio()
 
-  // --- Scattered Logic ---
   const playTrack = (track: any) => {
     setCurrentTrack(track)
     setIsLoading(true)
-    setIsPlaying(false) // Reset playing state manually
+    setIsPlaying(false)
 
     audio.src = track.url
-    // Side effect happens immediately and directly
     audio.play().catch((err) => {
       console.error('Playback failed', err)
       setIsPlaying(false)
@@ -36,7 +31,6 @@ export const ImperativeAudioPlayer = () => {
   }
 
   onMount(() => {
-    // Wiring up listeners that directly mutate signals
     audio.oncanplay = () => {
       setIsLoading(false)
       setIsPlaying(true)
