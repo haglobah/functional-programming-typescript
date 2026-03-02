@@ -1,4 +1,5 @@
-import { createEffect, createSignal, createMemo, onMount, For, Show } from 'solid-js'
+import { createEffect, createMemo, onMount, For, Show } from 'solid-js'
+import { createReducer } from '../utils'
 
 export type Track = { id: string; url: string; title: string }
 export type Time = number
@@ -10,54 +11,67 @@ export type Paused = { type: 'Paused'; track: Track; currentTime: Time }
 
 export type State = Initial | Loading | Playing | Paused
 
+export type SelectTrack = { type: 'SelectTrack'; track: Track }
+export type AudioReady = { type: 'AudioReady' }
+export type Tick = { type: 'Tick'; time: number }
+export type TogglePlay = { type: 'TogglePlay' }
+
+export type Action = SelectTrack | AudioReady | Tick | TogglePlay
+
+export const reduce = (s: State, a: Action): State => {
+  switch (a.type) {
+    case 'SelectTrack':
+      return { type: 'Loading', track: a.track }
+    case 'AudioReady':
+      if (s.type === 'Loading') {
+        return { type: 'Playing', track: s.track, currentTime: 0 }
+      } else {
+        return s
+      }
+    case 'Tick':
+      if (s.type === 'Playing') {
+        return { ...s, currentTime: a.time }
+      }
+      return s
+    case 'TogglePlay':
+      if (s.type === 'Playing') {
+        return { ...s, type: 'Paused' }
+      } else if (s.type === 'Paused') {
+        return { ...s, type: 'Playing' }
+      } else {
+        return s
+      }
+    default:
+      const _exhaustive: never = a
+      return _exhaustive
+  }
+}
+
 export const MISUAudioPlayer = () => {
-  const [state, setState] = createSignal<State>({ type: 'Initial' })
-
-  createEffect(() => console.log(JSON.stringify(state())))
-
+  const [state, dispatch] = createReducer<State, Action>(reduce, { type: 'Initial' })
   const audio: HTMLAudioElement = new Audio()
 
-  const playTrack = (track: Track) => {
-    setState({ type: 'Loading', track })
+  createEffect(() => console.log(JSON.stringify(state)))
 
-    audio.src = track.url
-    audio.play().catch((err) => {
-      console.error('Playback failed', err)
-      setState({ type: 'Paused', track, currentTime: 0 })
-    })
-  }
-
-  const togglePlay = () =>
-    setState((prev: State) => {
-      if (prev.type === 'Paused') {
-        audio.play()
-        return { ...prev, type: 'Playing' }
-      } else if (prev.type === 'Playing') {
-        audio.pause()
-        return { ...prev, type: 'Paused' }
-      } else {
-        return prev
-      }
-    })
+  const playTrack = (track: Track) => dispatch({ type: 'SelectTrack', track })
+  const togglePlay = () => dispatch({ type: 'TogglePlay' })
 
   onMount(() => {
-    audio.oncanplay = () =>
-      setState((prev: State) => {
-        if (prev.type === 'Loading') {
-          return { type: 'Playing' as const, track: prev.track, currentTime: 0 }
-        } else {
-          return prev
-        }
-      })
+    audio.oncanplay = () => dispatch({ type: 'AudioReady' })
+    audio.ontimeupdate = () => dispatch({ type: 'Tick', time: audio.currentTime })
+  })
 
-    audio.ontimeupdate = () =>
-      setState((prev: State) => {
-        if (prev.type === 'Playing') {
-          return { ...prev, currentTime: audio.currentTime }
-        } else {
-          return prev
-        }
+  createEffect(() => {
+    if (state.type === 'Playing') {
+      audio.play().catch((err) => {
+        console.error('Playback failed', err)
+        dispatch({ type: 'TogglePlay' })
       })
+    } else if (state.type === 'Paused') {
+      audio.pause()
+    } else if (state.type === 'Loading') {
+      audio.src = state.track.url
+    }
   })
 
   const tracks = [
@@ -74,8 +88,8 @@ export const MISUAudioPlayer = () => {
   ]
 
   const trackState = createMemo(() => {
-    if (state().type === 'Loading' || state().type === 'Paused' || state().type === 'Playing') {
-      return state() as Loading | Playing | Paused
+    if (state.type === 'Loading' || state.type === 'Paused' || state.type === 'Playing') {
+      return state
     } else {
       return undefined
     }
