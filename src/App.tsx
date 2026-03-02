@@ -4,6 +4,7 @@ import { AuthTabs } from './components/AuthTabs'
 import { createModal } from './components/Modal'
 import { authClient } from './auth-client'
 import { MISUAudioPlayer } from './components/MISUPlayer'
+import { STAudioPlayer } from './components/STPlayer'
 
 const App = () => {
   const { openModal, Modal } = createModal()
@@ -35,6 +36,7 @@ const App = () => {
       <div class="grid grid-cols-2">
         <ImperativeAudioPlayer />
         <MISUAudioPlayer />
+        <STAudioPlayer />
         <AudioPlayer />
       </div>
     </>
