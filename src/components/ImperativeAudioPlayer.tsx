@@ -59,7 +59,11 @@ export const ImperativeAudioPlayer = () => {
       <h2>Imperative Audio Player</h2>
 
       <For each={tracks}>
-        {(track) => <button onClick={() => playTrack(track)}>Play {track.title}</button>}
+        {(track) => (
+          <button class="p-2 bg-zinc-200 m-2 cursor-pointer" onClick={() => playTrack(track)}>
+            Play {track.title}
+          </button>
+        )}
       </For>
 
       <div style={{ 'margin-top': '20px', border: '1px solid red', padding: '10px' }}>
@@ -72,7 +76,9 @@ export const ImperativeAudioPlayer = () => {
 
           <p>Time: {currentTime().toFixed(2)}s</p>
 
-          <button onClick={togglePlay}>{isPlaying() ? 'Pause' : 'Resume'}</button>
+          <button class="p-2 bg-zinc-200 m-2 cursor-pointer" onClick={togglePlay}>
+            {isPlaying() ? 'Pause' : 'Resume'}
+          </button>
         </Show>
       </div>
     </div>
