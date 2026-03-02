@@ -10,7 +10,7 @@ export type Paused = { type: 'Paused'; track: Track; currentTime: Time }
 
 export type State = Initial | Loading | Playing | Paused
 
-export const ImperativeAudioPlayer = () => {
+export const MISUAudioPlayer = () => {
   const [state, setState] = createSignal<State>({ type: 'Initial' })
 
   createEffect(() => console.log(JSON.stringify(state())))
@@ -100,11 +100,11 @@ export const ImperativeAudioPlayer = () => {
             <>
               <h3>Now: {ts().track.title}</h3>
 
-              <Show when={state().type !== 'Loading'} fallback={<p>Loading...</p>}>
-                <p>Time: {(state() as Playing | Paused).currentTime.toFixed(2)}s</p>
+              <Show when={ts().type !== 'Loading'} fallback={<p>Loading...</p>}>
+                <p>Time: {(ts() as Playing | Paused).currentTime.toFixed(2)}s</p>
 
                 <button class="p-2 bg-zinc-200 m-2 cursor-pointer" onClick={togglePlay}>
-                  {state().type === 'Playing' ? 'Pause' : 'Resume'}
+                  {ts().type === 'Playing' ? 'Pause' : 'Resume'}
                 </button>
               </Show>
             </>
