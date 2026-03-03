@@ -1,77 +1,66 @@
+import { match, P } from 'ts-pattern'
 import { createEffect, createMemo, onMount, For, Show } from 'solid-js'
 import { createReducer } from '../utils'
 
 export type Track = { id: string; url: string; title: string }
 export type Time = number
 
-export type Initial = { type: 'Initial' }
-export type Loading = { type: 'Loading'; track: Track }
-export type Playing = { type: 'Playing'; track: Track; currentTime: Time }
-export type Paused = { type: 'Paused'; track: Track; currentTime: Time }
+export type Initial = { state: 'Initial' }
+export type Loading = { state: 'Loading'; track: Track }
+export type Playing = { state: 'Playing'; track: Track; currentTime: Time }
+export type Paused = { state: 'Paused'; track: Track; currentTime: Time }
 
 export type State = Initial | Loading | Playing | Paused
 
-export type SelectTrack = { type: 'SelectTrack'; track: Track }
-export type AudioReady = { type: 'AudioReady' }
-export type Tick = { type: 'Tick'; time: number }
-export type TogglePlay = { type: 'TogglePlay' }
+export type SelectTrack = { action: 'SelectTrack'; track: Track }
+export type AudioReady = { action: 'AudioReady' }
+export type Tick = { action: 'Tick'; time: number }
+export type TogglePlay = { action: 'TogglePlay' }
 
 export type Action = SelectTrack | AudioReady | Tick | TogglePlay
 
-export const reduce = (s: State, a: Action): State => {
-  switch (a.type) {
-    case 'SelectTrack':
-      return { type: 'Loading', track: a.track }
-    case 'AudioReady':
-      if (s.type === 'Loading') {
-        return { type: 'Playing', track: s.track, currentTime: 0 }
-      } else {
-        return s
-      }
-    case 'Tick':
-      if (s.type === 'Playing') {
-        return { ...s, currentTime: a.time }
-      }
-      return s
-    case 'TogglePlay':
-      if (s.type === 'Playing') {
-        return { ...s, type: 'Paused' }
-      } else if (s.type === 'Paused') {
-        return { ...s, type: 'Playing' }
-      } else {
-        return s
-      }
-    default:
-      const _exhaustive: never = a
-      return _exhaustive
-  }
-}
+export const reduce = (s: State, a: Action): State =>
+  match([a, s])
+    .returnType<State>()
+    .with([{ action: 'SelectTrack' }, P._], ([a]) => ({ state: 'Loading', track: a.track }))
+    .with([{ action: 'AudioReady' }, { state: 'Loading' }], ([, s]) => ({
+      state: 'Playing',
+      track: s.track,
+      currentTime: 0,
+    }))
+    .with([{ action: 'Tick' }, { state: 'Playing' }], ([a, s]) => ({ ...s, currentTime: a.time }))
+    .with([{ action: 'TogglePlay' }, { state: 'Playing' }], ([, s]) => ({ ...s, state: 'Paused' }))
+    .with([{ action: 'TogglePlay' }, { state: 'Paused' }], ([, s]) => ({ ...s, state: 'Playing' }))
+    .otherwise(() => s)
 
 export const STAudioPlayer = () => {
-  const [state, dispatch] = createReducer<State, Action>(reduce, { type: 'Initial' })
+  const [state, dispatch] = createReducer<State, Action>(reduce, { state: 'Initial' })
   const audio: HTMLAudioElement = new Audio()
 
   createEffect(() => console.log(JSON.stringify(state)))
 
-  const playTrack = (track: Track) => dispatch({ type: 'SelectTrack', track })
-  const togglePlay = () => dispatch({ type: 'TogglePlay' })
+  const playTrack = (track: Track) => dispatch({ action: 'SelectTrack', track })
+  const togglePlay = () => dispatch({ action: 'TogglePlay' })
 
   onMount(() => {
-    audio.oncanplay = () => dispatch({ type: 'AudioReady' })
-    audio.ontimeupdate = () => dispatch({ type: 'Tick', time: audio.currentTime })
+    audio.oncanplay = () => dispatch({ action: 'AudioReady' })
+    audio.ontimeupdate = () => dispatch({ action: 'Tick', time: audio.currentTime })
   })
 
   createEffect(() => {
-    if (state.type === 'Playing') {
-      audio.play().catch((err) => {
-        console.error('Playback failed', err)
-        dispatch({ type: 'TogglePlay' })
+    match(state)
+      .with({ state: 'Playing' }, () => {
+        audio.play().catch((err) => {
+          console.error('Playback failed', err)
+          dispatch({ action: 'TogglePlay' })
+        })
       })
-    } else if (state.type === 'Paused') {
-      audio.pause()
-    } else if (state.type === 'Loading') {
-      audio.src = state.track.url
-    }
+      .with({ state: 'Paused' }, () => {
+        audio.pause()
+      })
+      .with({ state: 'Loading' }, (s) => {
+        audio.src = s.track.url
+      })
   })
 
   const tracks = [
@@ -88,7 +77,7 @@ export const STAudioPlayer = () => {
   ]
 
   const trackState = createMemo(() => {
-    if (state.type === 'Loading' || state.type === 'Paused' || state.type === 'Playing') {
+    if (state.state === 'Loading' || state.state === 'Paused' || state.state === 'Playing') {
       return state
     } else {
       return undefined
@@ -114,11 +103,11 @@ export const STAudioPlayer = () => {
             <>
               <h3>Now: {ts().track.title}</h3>
 
-              <Show when={ts().type !== 'Loading'} fallback={<p>Loading...</p>}>
+              <Show when={ts().state !== 'Loading'} fallback={<p>Loading...</p>}>
                 <p>Time: {(ts() as Playing | Paused).currentTime.toFixed(2)}s</p>
 
                 <button class="p-2 bg-zinc-200 m-2 cursor-pointer" onClick={togglePlay}>
-                  {ts().type === 'Playing' ? 'Pause' : 'Resume'}
+                  {ts().state === 'Playing' ? 'Pause' : 'Resume'}
                 </button>
               </Show>
             </>
