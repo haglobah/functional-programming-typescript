@@ -7,11 +7,9 @@ export const createUpdater = <S extends object, M, C>(
 ): [S, (msg: M) => void] => {
   const [store, setStore] = createStore<S>(initialState)
   const dispatch = (msg: M): void => {
-    setStore((state) => {
-      const [newState, cmd] = update(state, msg)
-      execute(cmd)
-      return newState
-    })
+    const [newState, cmd] = update(store, msg)
+    execute(cmd)
+    setStore(reconcile(newState))
   }
   return [store, dispatch]
 }
