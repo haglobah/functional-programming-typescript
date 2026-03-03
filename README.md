@@ -1,28 +1,33 @@
-## Usage
+# Functional Programming in TypeScript
 
-```bash
-$ npm install # or pnpm install or yarn install
+This is an example repo for programming in a functional style in TypeScript.
+
+It consists of one small audio player component, modeled in different intermediate states of 'functional-programmingness'.
+
+## Getting started
+
+This project comes with a `flake.nix` that has everything you'll need.
+
+To get up and running, [install Nix](https://beathagenlocher.com/nix/#install-nix) if you haven't already.
+
+Then, enter the development shell:
+
+```shell
+nix develop
 ```
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+After that, there is a `Justfile` that has everything you need. Do a:
 
-## Available Scripts
+```shell
+just setup
+```
 
-In the project directory, you can run:
+And then a:
 
-### `npm run dev`
+``` shell
+just open && just dev
+```
 
-Runs the app in the development mode.<br>
-Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+This should run the vite dev server and open it in your browser.
 
-### `npm run build`
-
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-## Deployment
-
-Learn more about deploying your application with the [documentations](https://vite.dev/guide/static-deploy.html)
+After that, you can get started on reading/editing the code—the components are in `src/components/*`.

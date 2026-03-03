@@ -2,6 +2,8 @@ help:
     just --list
 
 [parallel]
+all: frontend backend
+
 dev: frontend
 
 frontend:
