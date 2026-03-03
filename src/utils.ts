@@ -1,14 +1,14 @@
 import { createStore, reconcile } from 'solid-js/store'
 
-export const createUpdater = <S extends object, A, C>(
-  update: (state: S, action: A) => [S, C],
+export const createUpdater = <S extends object, M, C>(
+  update: (state: S, msg: M) => [S, C],
   initialState: S,
   execute: (cmd: C) => void,
-): [S, (action: A) => void] => {
+): [S, (msg: M) => void] => {
   const [store, setStore] = createStore<S>(initialState)
-  const dispatch = (action: A): void => {
+  const dispatch = (msg: M): void => {
     setStore((state) => {
-      const [newState, cmd] = update(state, action)
+      const [newState, cmd] = update(state, msg)
       execute(cmd)
       return newState
     })
