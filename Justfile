@@ -1,6 +1,9 @@
 help:
     just --list
 
+setup:
+    bun install
+
 [parallel]
 all: frontend backend
 
