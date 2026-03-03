@@ -6,4 +6,5 @@ export default defineConfig({
   clearScreen: false,
   plugins: [solid(), tailwindcss()],
   server: { proxy: { '/api/auth': 'http://localhost:3001' } },
+  optimizeDeps: { exclude: ['react'] },
 })
