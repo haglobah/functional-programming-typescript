@@ -1,5 +1,5 @@
 import { createEffect, createMemo, onMount, For, Show } from 'solid-js'
-import { createReducer } from '../utils'
+import { createUpdater } from '../utils'
 
 export type Track = { id: string; url: string; title: string }
 export type Time = number
@@ -16,62 +16,95 @@ export type AudioReady = { type: 'AudioReady' }
 export type Tick = { type: 'Tick'; time: number }
 export type TogglePlay = { type: 'TogglePlay' }
 
-export type Action = SelectTrack | AudioReady | Tick | TogglePlay
+export type Msg = SelectTrack | AudioReady | Tick | TogglePlay
 
-export const reduce = (s: State, a: Action): State => {
-  switch (a.type) {
+export type None = { type: 'None' }
+export type Load = { type: 'Load'; url: string }
+export type Pause = { type: 'Pause' }
+export type Play = { type: 'Play' }
+
+export type Cmd = None | Load | Pause | Play
+
+export const Initial = (): Initial => ({ type: 'Initial' })
+export const Loading = (track: Track): Loading => ({ type: 'Loading', track })
+export const Playing = (track: Track, currentTime: Time): Playing => ({
+  type: 'Playing',
+  track,
+  currentTime,
+})
+export const Paused = (track: Track, currentTime: Time): Paused => ({
+  type: 'Paused',
+  track,
+  currentTime,
+})
+
+export const SelectTrack = (track: Track): SelectTrack => ({ type: 'SelectTrack', track })
+export const AudioReady = (): AudioReady => ({ type: 'AudioReady' })
+export const Tick = (time: number): Tick => ({ type: 'Tick', time })
+export const TogglePlay = (): TogglePlay => ({ type: 'TogglePlay' })
+
+export const None = (): None => ({ type: 'None' })
+export const Load = (url: string): Load => ({ type: 'Load', url })
+export const Pause = (): Pause => ({ type: 'Pause' })
+export const Play = (): Play => ({ type: 'Play' })
+
+export const update = (s: State, m: Msg): [State, Cmd] => {
+  switch (m.type) {
     case 'SelectTrack':
-      return { type: 'Loading', track: a.track }
+      return [Loading(m.track), Load(m.track.url)]
     case 'AudioReady':
       if (s.type === 'Loading') {
-        return { type: 'Playing', track: s.track, currentTime: 0 }
+        return [Playing(s.track, 0), Play()]
       } else {
-        return s
+        return [s, None()]
       }
     case 'Tick':
       if (s.type === 'Playing') {
-        return { ...s, currentTime: a.time }
+        return [{ ...s, currentTime: m.time }, None()]
       }
-      return s
+      return [s, None()]
     case 'TogglePlay':
       if (s.type === 'Playing') {
-        return { ...s, type: 'Paused' }
+        return [{ ...s, type: 'Paused' }, Pause()]
       } else if (s.type === 'Paused') {
-        return { ...s, type: 'Playing' }
+        return [{ ...s, type: 'Playing' }, Play()]
       } else {
-        return s
+        return [s, None()]
       }
     default:
-      const _exhaustive: never = a
+      const _exhaustive: never = m
       return _exhaustive
   }
 }
 
+export const makeExecute = (player: HTMLAudioElement) => {
+  const execute = (cmd: Cmd) => {
+    if (cmd.type === 'Play') {
+      player.play().catch((err) => {
+        console.error('Playback failed', err)
+        return TogglePlay()
+      })
+    } else if (cmd.type === 'Pause') {
+      player.pause()
+    } else if (cmd.type === 'Load') {
+      player.src = cmd.url
+    }
+  }
+  return execute
+}
+
 export const STAudioPlayer = () => {
-  const [state, dispatch] = createReducer<State, Action>(reduce, { type: 'Initial' })
   const audio: HTMLAudioElement = new Audio()
+  const [state, dispatch] = createUpdater<State, Msg, Cmd>(update, Initial(), makeExecute(audio))
 
   createEffect(() => console.log(JSON.stringify(state)))
 
-  const playTrack = (track: Track) => dispatch({ type: 'SelectTrack', track })
-  const togglePlay = () => dispatch({ type: 'TogglePlay' })
+  const playTrack = (track: Track) => dispatch(SelectTrack(track))
+  const togglePlay = () => dispatch(TogglePlay())
 
   onMount(() => {
-    audio.oncanplay = () => dispatch({ type: 'AudioReady' })
-    audio.ontimeupdate = () => dispatch({ type: 'Tick', time: audio.currentTime })
-  })
-
-  createEffect(() => {
-    if (state.type === 'Playing') {
-      audio.play().catch((err) => {
-        console.error('Playback failed', err)
-        dispatch({ type: 'TogglePlay' })
-      })
-    } else if (state.type === 'Paused') {
-      audio.pause()
-    } else if (state.type === 'Loading') {
-      audio.src = state.track.url
-    }
+    audio.oncanplay = () => dispatch(AudioReady())
+    audio.ontimeupdate = () => dispatch(Tick(audio.currentTime))
   })
 
   const tracks = [
