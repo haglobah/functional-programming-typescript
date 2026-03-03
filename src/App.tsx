@@ -6,6 +6,7 @@ import { authClient } from './auth-client'
 import { MISUAudioPlayer } from './components/MISUPlayer'
 import { STAudioPlayer } from './components/STPlayer'
 import { PatternMatchingAudioPlayer } from './components/PatternMatchingPlayer'
+import { EffectsAudioPlayer } from './components/EffectsPlayer'
 
 const App = () => {
   const { openModal, Modal } = createModal()
@@ -39,6 +40,7 @@ const App = () => {
         <MISUAudioPlayer />
         <STAudioPlayer />
         <PatternMatchingAudioPlayer />
+        <EffectsAudioPlayer />
         <AudioPlayer />
       </div>
     </>
