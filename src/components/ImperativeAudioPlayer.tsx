@@ -55,7 +55,7 @@ export const ImperativeAudioPlayer = () => {
   ]
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div class="p-5">
       <h2>Imperative Audio Player</h2>
 
       <For each={tracks}>
@@ -66,7 +66,7 @@ export const ImperativeAudioPlayer = () => {
         )}
       </For>
 
-      <div style={{ 'margin-top': '20px', border: '1px solid red', padding: '10px' }}>
+      <div class="mt-4 p-2 border-[1px] border-solid border-red-500">
         <Show when={currentTrack()} fallback={<p>No track selected</p>}>
           <h3>Now: {currentTrack().title}</h3>
 
