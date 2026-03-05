@@ -19,7 +19,7 @@ const App = () => {
 
   return (
     <>
-      <button
+      {/*<button
         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
         onClick={openModal}
       >
@@ -34,14 +34,14 @@ const App = () => {
       <pre>{JSON.stringify(session().data?.user, null, 2)}</pre>
       <Modal>
         <AuthTabs />
-      </Modal>
+        </Modal> */}
       <div class="grid grid-cols-2">
         <ImperativeAudioPlayer />
         <MISUAudioPlayer />
         <STAudioPlayer />
         <PatternMatchingAudioPlayer />
         <EffectsAudioPlayer />
-        <AudioPlayer />
+        {/*<AudioPlayer /> */}
       </div>
     </>
   )
