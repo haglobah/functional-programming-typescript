@@ -3,6 +3,10 @@
 
   inputs = {
     nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/*.tar.gz";
+    purescript-overlay = {
+      url = "github:thomashoneyman/purescript-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -25,6 +29,9 @@
         _module.args.pkgs = import self.inputs.nixpkgs {
           inherit system;
           config.allowUnfree = true;
+          overlays = [
+            inputs.purescript-overlay.overlays.default
+          ];
         };
 
         # Per-system attributes can be defined here. The self' and inputs'
@@ -41,6 +48,11 @@
             typescript
             typescript-language-server
             just
+            purs
+            spago-unstable
+            purs-tidy
+            purs-backend-es
+            purescript-language-server
           ];
         };
       };

@@ -1,0 +1,9 @@
+package:
+  name: purs
+  dependencies:
+    - prelude
+    - tuples
+workspace:
+  packageSet:
+    registry: 75.5.0
+  extraPackages: {}

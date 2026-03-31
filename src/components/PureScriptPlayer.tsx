@@ -1,0 +1,278 @@
+import { onMount, For, Show, Switch, Match, type Component } from 'solid-js'
+import type { State, Cmd, Track } from '../types/PlayerModel'
+import { createUpdater } from '../utils'
+import { update, initialState } from '../purs-interop'
+
+const makeExecute = (player: HTMLMediaElement) => {
+  const execute = (cmd: Cmd) => {
+    if (cmd.kind === 'LoadAndPlay') {
+      player.src = cmd.url
+      player.play()
+    } else if (cmd.kind === 'Play') {
+      player.play()
+    } else if (cmd.kind === 'Pause') {
+      player.pause()
+    } else if (cmd.kind === 'SeekTo') {
+      player.currentTime = cmd.time
+    }
+  }
+  return execute
+}
+
+const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+export const PureScriptPlayer: Component = () => {
+  const player = new Audio()
+
+  const [state, dispatch] = createUpdater(update, initialState, makeExecute(player))
+
+  onMount(() => {
+    player.oncanplay = () => dispatch({ kind: 'AudioReady', duration: player.duration })
+    player.ontimeupdate = () => dispatch({ kind: 'Tick', time: player.currentTime })
+    player.onended = () => dispatch({ kind: 'TogglePlay' })
+  })
+
+  const tracks: Track[] = [
+    {
+      id: '1',
+      title: 'Lo-Fi Beats',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    },
+    {
+      id: '2',
+      title: 'Synthwave',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    },
+  ]
+
+  const isCurrentTrack = (track: Track): boolean => {
+    if (state.kind === 'Idle') return false
+    return state.track.id === track.id
+  }
+
+  const handleSeek = (e: Event) => {
+    const target = e.target as HTMLInputElement
+    dispatch({ kind: 'Seek', time: parseFloat(target.value) })
+  }
+
+  const playOrPauseState = () =>
+    state.kind === 'Playing' || state.kind === 'Paused'
+      ? (state as Extract<State, { kind: 'Playing' | 'Paused' }>)
+      : null
+
+  const loadingState = () =>
+    state.kind === 'Loading' ? (state as Extract<State, { kind: 'Loading' }>) : null
+
+  return (
+    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 flex items-center justify-center p-6">
+      <div class="w-full max-w-md bg-slate-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-700/50 overflow-hidden">
+        <div class="p-8">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white">PureScript Player</h2>
+              <p class="text-xs text-emerald-400 font-mono">update logic in PureScript</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 mb-8">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+              Playlist
+            </p>
+            <For each={tracks}>
+              {(track) => (
+                <button
+                  onClick={() => dispatch({ kind: 'SelectTrack', track })}
+                  class={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-200 ${
+                    isCurrentTrack(track)
+                      ? 'bg-gradient-to-r from-emerald-600/30 to-teal-600/30 border border-emerald-500/50'
+                      : 'bg-slate-700/30 hover:bg-slate-700/50 border border-transparent'
+                  }`}
+                >
+                  <div
+                    class={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      isCurrentTrack(track)
+                        ? 'bg-gradient-to-br from-emerald-500 to-teal-500'
+                        : 'bg-slate-600'
+                    }`}
+                  >
+                    <Show
+                      when={isCurrentTrack(track) && state.kind === 'Playing'}
+                      fallback={
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      }
+                    >
+                      <div class="flex items-end gap-0.5 h-4">
+                        <span
+                          class="w-1 bg-white rounded-full animate-pulse"
+                          style="height: 100%; animation-delay: 0ms"
+                        />
+                        <span
+                          class="w-1 bg-white rounded-full animate-pulse"
+                          style="height: 60%; animation-delay: 150ms"
+                        />
+                        <span
+                          class="w-1 bg-white rounded-full animate-pulse"
+                          style="height: 80%; animation-delay: 300ms"
+                        />
+                      </div>
+                    </Show>
+                  </div>
+                  <div class="flex-1 text-left">
+                    <p class="font-semibold text-white">{track.title}</p>
+                    <p class="text-sm text-slate-400">Track {track.id}</p>
+                  </div>
+                  <Show when={isCurrentTrack(track)}>
+                    <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                  </Show>
+                </button>
+              )}
+            </For>
+          </div>
+
+          <div class="bg-slate-700/30 rounded-2xl p-6">
+            <Switch>
+              <Match when={state.kind === 'Idle'}>
+                <div class="text-center py-4">
+                  <div class="w-16 h-16 mx-auto mb-4 bg-slate-600/50 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                    </svg>
+                  </div>
+                  <p class="text-slate-400">Select a track to begin</p>
+                </div>
+              </Match>
+
+              <Match when={loadingState()}>
+                {(loading) => (
+                  <div class="text-center py-4">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-emerald-600/30 rounded-full flex items-center justify-center">
+                      <svg
+                        class="w-8 h-8 text-emerald-400 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          class="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          stroke-width="4"
+                        />
+                        <path
+                          class="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    </div>
+                    <p class="text-emerald-300 font-medium">Loading {loading().track.title}...</p>
+                  </div>
+                )}
+              </Match>
+
+              <Match when={playOrPauseState()}>
+                {(active) => (
+                  <div>
+                    <div class="text-center mb-6">
+                      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                        Now {active().kind === 'Playing' ? 'Playing' : 'Paused'}
+                      </p>
+                      <h3 class="text-xl font-bold text-white">{active().track.title}</h3>
+                    </div>
+
+                    <div class="mb-6">
+                      <div class="relative group">
+                        <input
+                          type="range"
+                          min={0}
+                          max={active().duration}
+                          step={0.1}
+                          value={active().currentTime}
+                          onInput={handleSeek}
+                          class="w-full h-2 bg-slate-600 rounded-full appearance-none cursor-pointer
+                            [&::-webkit-slider-thumb]:appearance-none
+                            [&::-webkit-slider-thumb]:w-4
+                            [&::-webkit-slider-thumb]:h-4
+                            [&::-webkit-slider-thumb]:rounded-full
+                            [&::-webkit-slider-thumb]:bg-gradient-to-br
+                            [&::-webkit-slider-thumb]:from-emerald-500
+                            [&::-webkit-slider-thumb]:to-teal-500
+                            [&::-webkit-slider-thumb]:shadow-lg
+                            [&::-webkit-slider-thumb]:shadow-emerald-500/50
+                            [&::-webkit-slider-thumb]:transition-transform
+                            [&::-webkit-slider-thumb]:duration-150
+                            [&::-webkit-slider-thumb]:hover:scale-125
+                            [&::-moz-range-thumb]:w-4
+                            [&::-moz-range-thumb]:h-4
+                            [&::-moz-range-thumb]:rounded-full
+                            [&::-moz-range-thumb]:bg-gradient-to-br
+                            [&::-moz-range-thumb]:from-emerald-500
+                            [&::-moz-range-thumb]:to-teal-500
+                            [&::-moz-range-thumb]:border-0
+                            [&::-moz-range-thumb]:shadow-lg
+                            [&::-moz-range-thumb]:shadow-emerald-500/50
+                            [&::-moz-range-thumb]:transition-transform
+                            [&::-moz-range-thumb]:duration-150
+                            [&::-moz-range-thumb]:hover:scale-125
+                            [&::-webkit-slider-runnable-track]:rounded-full
+                            [&::-moz-range-track]:rounded-full"
+                          style={{
+                            background: `linear-gradient(to right, rgb(16 185 129) 0%, rgb(20 184 166) ${(active().currentTime / active().duration) * 100}%, rgb(71 85 105) ${(active().currentTime / active().duration) * 100}%, rgb(71 85 105) 100%)`,
+                          }}
+                        />
+                      </div>
+                      <div class="flex justify-between mt-3">
+                        <span class="text-xs font-medium text-slate-400">
+                          {formatTime(active().currentTime)}
+                        </span>
+                        <span class="text-xs font-medium text-slate-400">
+                          {formatTime(active().duration)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="flex justify-center">
+                      <button
+                        onClick={() => dispatch({ kind: 'TogglePlay' })}
+                        class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-200"
+                      >
+                        <Show
+                          when={active().kind === 'Playing'}
+                          fallback={
+                            <svg
+                              class="w-7 h-7 text-white ml-1"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          }
+                        >
+                          <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                          </svg>
+                        </Show>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </Match>
+            </Switch>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
