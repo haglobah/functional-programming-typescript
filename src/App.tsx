@@ -8,6 +8,7 @@ import { STAudioPlayer } from './components/STPlayer'
 import { PatternMatchingAudioPlayer } from './components/PatternMatchingPlayer'
 import { EffectsAudioPlayer } from './components/EffectsPlayer'
 import { PureScriptPlayer } from './components/PureScriptPlayer'
+import { DekuPlayer } from './components/DekuPlayer'
 
 const App = () => {
   const { openModal, Modal } = createModal()
@@ -43,6 +44,7 @@ const App = () => {
         <PatternMatchingAudioPlayer />
         <EffectsAudioPlayer />
         <PureScriptPlayer />
+        <DekuPlayer />
         {/*<AudioPlayer /> */}
       </div>
     </>

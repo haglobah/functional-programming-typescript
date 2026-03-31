@@ -3,6 +3,13 @@ package:
   dependencies:
     - prelude
     - tuples
+    - deku
+    - effect
+    - refs
+    - integers
+    - numbers
+    - web-html
+    - web-events
 workspace:
   packageSet:
     registry: 75.5.0

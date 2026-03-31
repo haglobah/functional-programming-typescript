@@ -68,7 +68,7 @@ export const PureScriptPlayer: Component = () => {
     state.kind === 'Loading' ? (state as Extract<State, { kind: 'Loading' }>) : null
 
   return (
-    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 flex items-center justify-center p-6">
+    <div class="bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 flex items-center justify-center p-6">
       <div class="w-full max-w-md bg-slate-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-700/50 overflow-hidden">
         <div class="p-8">
           <div class="flex items-center gap-3 mb-8">
